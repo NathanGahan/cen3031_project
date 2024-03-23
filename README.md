@@ -2,7 +2,7 @@ File to create portfolio
 
 Background for the code.
 
-Uses a map to store transaction id and transaction details.
+Uses a dictionary to store transaction id and transaction details.
 
 portfolio[transaction_id] = [ticker_symbol, qty, buy_price, sell_price]
 
