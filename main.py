@@ -81,12 +81,13 @@ def main():
         choice = int(input("Enter your choice: "))
 
         if choice == 1:
-            addTrans = ("INSERT INTO transactions"
+            addTrans = ("INSERT INTO transactions "
                         "(tickerSymbol, transactionType, transactionQuantity, transactionPrice, transactionDate, userID)"
                         "VALUES (%s, %s, %s, %s, %s, %s)")
-            ticker_symbol = input("Enter the ticker symbol: ")
+            ticker_symbol = input("Enter the ticker symbol: ")  # case sensitive!
+            # if they don't put either "BOUGHT" or "SOLD" it should be an error
             transaction_type = input("Type 'BOUGHT' or 'SOLD' if you bought or sold the stock(s) in this transaction respectively: ")
-            qty = int(input("Enter the quantity of stocks bought: "))
+            qty = int(input("Enter the quantity of stocks bought/sold: "))
             transaction_price = float(input("Enter the total transaction amount: "))
             user_ID = input("Enter the user ID: ")
             transaction_year = int(input("Enter the year of the transaction(eg: 2003): "))
@@ -94,7 +95,46 @@ def main():
             transaction_day = int(input("Enter the day of the month of the transaction(do not use a leading 0): "))
             dataTrans = (ticker_symbol, transaction_type, qty, transaction_price, date(transaction_year, transaction_month, transaction_day), user_ID)
             cursor.execute(addTrans, dataTrans)
-            conn.commit()
+
+            # update the positions table:
+            # put all rows in the positions table with a matching ID and ticker symbol in your cursor object
+            query = ("SELECT * FROM positions "
+                     "WHERE userID = %s AND tickerSymbol = %s")
+            dataQuery = (user_ID, ticker_symbol)
+            cursor.execute(query, dataQuery)
+            fetch = cursor.fetchone()
+            if cursor.rowcount == 0:  # if position doesn't exist in their table, create a new entry for it, unless the
+                # transaction was a sell in which it should draw an error(you're selling a stock you own none of)
+                # Maybe if the transaction was invalid, delete the transaction with the highest transactionCounter
+                cursor.reset()
+                addPosition = ("INSERT INTO positions "
+                               "(tickerSymbol, quantity, userID)"
+                               "VALUES (%s, %s, %s)")
+                dataPosition = (ticker_symbol, qty, user_ID)
+                cursor.execute(addPosition, dataPosition)
+                conn.commit()
+            else:  # if position does exist in their table, update its quantity based upon the latest transaction
+                # retrieve the column entries from that stock's row in positions(we need the counter and quantity)
+                queryCounter, queryTicker, queryQuantity, queryID = fetch
+                if transaction_type == "BOUGHT":  # if the transaction was a "buy"
+                    # update the old position entry with the new quantity
+                    updatePosition = ("UPDATE positions "
+                                      "SET quantity = %s"
+                                      "WHERE positionsCounter =%s")
+                    updatePositionData = (queryQuantity + qty, queryCounter)
+                    cursor.execute(updatePosition, updatePositionData)
+                    conn.commit()
+                else:  # if transaction was a "sell"
+                    # update the old position entry with the new quantity
+                    updatePosition = ("UPDATE positions "
+                                      "SET quantity = %s"
+                                      "WHERE positionsCounter =%s")
+                    updatePositionData = (queryQuantity - qty, queryCounter)
+                    cursor.execute(updatePosition, updatePositionData)
+                    conn.commit()
+
+
+
 
         elif choice == 2:
             query = ("SELECT * FROM transactions")
