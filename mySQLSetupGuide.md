@@ -18,3 +18,11 @@ Setting up MySQL on your system for Windows:
 16. For "server file permissions" make sure that "yes, grant full access...." is selected
 17. For "sample databases" none need to be selected, click next
 18. For "apply configuration" click execute and once done click next and finish
+19. Go to your windows search bar and find "MYSQL 8.0 Command Line Client" and open it
+20. Input the root password you saved somewhere and press enter
+21. On our GitHub repo, find the "mySQLTablePrompt.txt" file and download it to your computer
+22. Open the text file in notepad and do 'ctrl a' and 'ctrl c'
+23. Then go back to the command line and paste, a window will pop up asking if you're sure you want to paste and you will paste anyway. You shouldn't need to press enter. 
+24. Type "QUIT" and the command line will close
+25. You should have a python compatible IDE on your computer with the latest version of python installed
+26. Open your terminal in that IDE and run this command "pip install mysql-connector-python" and then "python.exe -m pip install --upgrade pip"
